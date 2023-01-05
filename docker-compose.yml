@@ -1,0 +1,38 @@
+version: "3"
+services:
+  hapi-fhir-jpaserver:
+    image: hapiproject/hapi:latest
+    container_name: hapi-fhir-server
+    volumes:
+      - ./data/hapi:/data/hapi
+    restart: on-failure
+    ports:
+      - "8085:8080"
+    environment:
+      SPRING_CONFIG_LOCATION: '/data/hapi/application.yaml'
+    depends_on:
+      hapi-fhir-mysql:
+        condition: service_started
+
+  hapi-fhir-mysql:
+    image: mysql:8.0.29-oracle
+    container_name: hapi-fhir-mysql
+    command: --lower_case_table_names=1 --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'hapi'
+      MYSQL_USER: 'admin'
+      MYSQL_PASSWORD: 'admin'
+      MYSQL_ROOT_PASSWORD: 'admin'
+    volumes:
+      - hapi-fhir-mysql:/var/lib/mysql
+    ports:
+       - "3306:3306"
+  
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8082:8080
+volumes:
+  hapi-fhir-mysql:  
